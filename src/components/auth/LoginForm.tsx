@@ -1,39 +1,40 @@
-// src/components/auth/LoginForm.tsx
+// components/auth/LoginForm.jsx
 "use client";
 import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
     
-    const result = login(email, password);
-    
-    if (result.success) {
-      // توجيه المستخدم بناءً على دوره
-      switch (result.user.role) {
-        case 'admin':
-          router.push('/admin/dashboard');
-          break;
-        case 'seller':
-          router.push('/seller/dashboard');
-          break;
-        case 'customer':
-          router.push('/');
-          break;
-        default:
-          router.push('/');
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+      
+      if (result.error) {
+        setError("بيانات الدخول غير صحيحة");
+        return;
       }
-    } else {
-      setError(result.message);
+      
+      // تم تسجيل الدخول بنجاح، سنقوم بإعادة تحميل الصفحة للحصول على جلسة المستخدم
+      router.push('/admin/dashboard');
+      router.refresh();
+    } catch (error) {
+      setError("حدث خطأ في تسجيل الدخول");
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -79,10 +80,20 @@ export default function LoginForm() {
         <button
           type="submit"
           className="w-full bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 transition duration-300"
+          disabled={isLoading}
         >
-          تسجيل الدخول
+          {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
         </button>
       </form>
+      
+      <div className="mt-4 text-center text-sm">
+        <p className="text-gray-600">
+          لتسجيل الدخول كمسؤول استخدم:
+        </p>
+        <p className="text-gray-800">
+          البريد: admin@example.com / كلمة المرور: Admin@1234
+        </p>
+      </div>
     </div>
   );
 }

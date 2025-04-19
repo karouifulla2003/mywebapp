@@ -1,56 +1,85 @@
-//myproject
-// src/hooks/useAuth.js
-import { useState, useEffect, createContext, useContext } from 'react';
-import { users } from '@/data/users';
+"use client";
+import { useState, createContext, useContext } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
+// إنشاء سياق للمصادقة
 const AuthContext = createContext(null);
 
+// مكون AuthProvider المطلوب
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    // تحقق مما إذا كان المستخدم مسجل الدخول بالفعل
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, []);
-  
-  const login = (email, password) => {
-    // محاكاة عملية تسجيل الدخول
-    const foundUser = users.find(
-      u => u.email === email && u.password === password
-    );
-    
-    if (foundUser) {
-      // احذف كلمة المرور قبل التخزين
-      const { password, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-      return { success: true, user: userWithoutPassword };
-    }
-    
-    return { success: false, message: "بيانات الدخول غير صحيحة" };
-  };
-  
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-  };
-  
-  const register = (userData) => {
-    // محاكاة عملية التسجيل
-    // في التطبيق الفعلي، ستقوم بإرسال طلب إلى الخادم
-    return { success: true, message: "تم إنشاء الحساب بنجاح" };
-  };
+  const authValues = useAuth();
   
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, loading }}>
+    <AuthContext.Provider value={authValues}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+// استخدام سياق المصادقة
+export function useAuthContext() {
+  return useContext(AuthContext);
+}
+
+export function useAuth() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const login = async (email, password) => {
+    setIsLoading(true);
+    
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result.error) {
+        return {
+          success: false,
+          message: "بيانات الدخول غير صحيحة"
+        };
+      }
+
+      // الحصول على بيانات المستخدم من MOCK_USERS
+      const mockUsers = [
+        {
+          id: "admin-1",
+          name: "مدير النظام",
+          email: "admin@example.com",
+          role: "admin",
+        },
+        {
+          id: "user-1",
+          name: "مستخدم عادي",
+          email: "user@example.com",
+          role: "user",
+        },
+        {
+          id: "seller-1",
+          name: "بائع",
+          email: "seller@example.com",
+          role: "seller",
+        }
+      ];
+
+      const user = mockUsers.find(user => user.email === email);
+      
+      return {
+        success: true,
+        user: user || { role: "user" }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: "حدث خطأ في تسجيل الدخول"
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { login, isLoading };
+}

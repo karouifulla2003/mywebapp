@@ -4,7 +4,7 @@ export const users = [
       id: 1,
       name: "مدير النظام",
       email: "admin@example.com",
-      password: "admin123", // في الإنتاج استخدم تشفير كلمات المرور
+      password: "Admin@1234", // في الإنتاج استخدم تشفير كلمات المرور
       role: "admin",
       createdAt: "2023-01-01T00:00:00.000Z"
     },
