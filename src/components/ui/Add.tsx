@@ -42,7 +42,7 @@ const Add = () => {
         {/* زر الشراء */}
         <button
           onClick={handleBuyNow}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg mb-4 transition-colors duration-300 flex items-center justify-center gap-2 rtl:flex-row-reverse"
+className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg mb-4 transition-colors duration-300 flex items-center justify-center gap-2 ltr:flex-row-reverse"
         >
           <ShoppingBag size={20} />
           <span>Buy it now</span>
@@ -50,7 +50,7 @@ const Add = () => {
         
         {/* معلومات الشحن والتوصيل والدفع */}
         <div className="bg-gray-50 rounded-lg p-6 mb-6">
-          <div className="flex items-center gap-6 mb-3 rtl:flex-row-reverse">
+        <div className="flex items-center gap-6 mb-3 ltr:flex-row-reverse">
             <Truck size={18} className="text-gray-600" />
             <div className="text-sm">
               <p className="font-semibold">Fast Shipping</p>
@@ -58,7 +58,7 @@ const Add = () => {
             </div>
           </div>
           
-          <div className="flex items-center gap-6 rtl:flex-row-reverse">
+          <div className="flex items-center gap-6 ltr:flex-row-reverse">
             <CreditCard size={18} className="text-gray-600" />
             <div className="text-sm">
               <p className="font-semibold">Multiple Payment Options</p>

@@ -1,74 +1,159 @@
+//app/admin/products/page.jsx
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import styles from "@/app/ui/dashboard/products/products.module.css";
-import Search from "@/app/ui/dashboard/search/search";
-import Pagination from "@/app/ui/dashboard/pagination/pagination";
-import { fetchProducts } from "@/app/lib/data";
-import { deleteProduct } from "@/app/lib/actions";
+import styles from "@/components/admin-dashboard/products/products.module.css";
+import Search from "@/components/admin-dashboard/search/search";
+import Pagination from "@/components/admin-dashboard/pagination/pagination";
+import { deleteProduct } from "@/lib/adminActions";
 
-const ProductsPage = async ({ searchParams }) => {
+const ProductsPage = ({ searchParams }) => {
   const q = searchParams?.q || "";
-  const page = searchParams?.page || 1;
-  const { count, products } = await fetchProducts(q, page);
+  const page = Number(searchParams?.page) || 1;
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [count, setCount] = useState(0);
+  const [error, setError] = useState(null);
+  
+  const itemsPerPage = 10;
+  
+  // جلب المنتجات من API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/products${q ? `?search=${q}` : ''}`);
+        
+        if (!res.ok) {
+          throw new Error('فشل في جلب المنتجات');
+        }
+        
+        const data = await res.json();
+        setProducts(data);
+        setCount(data.length);
+        setError(null);
+      } catch (err) {
+        console.error("خطأ في جلب المنتجات:", err);
+        setError("حدث خطأ أثناء جلب المنتجات. يرجى المحاولة مرة أخرى.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProducts();
+  }, [q]);
+  
+  // تطبيق الصفحات
+  const paginatedProducts = products.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  );
+  
+  // حذف منتج
+  const handleDelete = async (id) => {
+    if (window.confirm("هل أنت متأكد أنك تريد حذف هذا المنتج؟")) {
+      try {
+        const res = await fetch(`/api/products?id=${id}`, {
+          method: 'DELETE',
+        });
+        
+        if (!res.ok) {
+          throw new Error('فشل في حذف المنتج');
+        }
+        
+        // تحديث قائمة المنتجات بعد الحذف
+        setProducts(products.filter(product => product.id !== id));
+        setCount(prev => prev - 1);
+        alert("تم حذف المنتج بنجاح");
+      } catch (err) {
+        console.error("خطأ في حذف المنتج:", err);
+        alert("حدث خطأ أثناء حذف المنتج");
+      }
+    }
+  };
 
   return (
     <div className={styles.container}>
       <div className={styles.top}>
-        <Search placeholder="Search for a product..." />
-        <Link href="/dashboard/products/add">
-          <button className={styles.addButton}>Add New</button>
+        <Search placeholder="البحث عن منتج..." />
+        <Link href="/admin/dashboard/products/add">
+          <button className={styles.addButton}>إضافة منتج جديد</button>
         </Link>
       </div>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <td>Title</td>
-            <td>Description</td>
-            <td>Price</td>
-            <td>Created At</td>
-            <td>Stock</td>
-            <td>Action</td>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => (
-            <tr key={product.id}>
-              <td>
-                <div className={styles.product}>
-                  <Image
-                    src={product.img || "/noproduct.jpg"}
-                    alt=""
-                    width={40}
-                    height={40}
-                    className={styles.productImage}
-                  />
-                  {product.title}
-                </div>
-              </td>
-              <td>{product.desc}</td>
-              <td>${product.price}</td>
-              <td>{product.createdAt?.toString().slice(4, 16)}</td>
-              <td>{product.stock}</td>
-              <td>
-                <div className={styles.buttons}>
-                  <Link href={`/dashboard/products/${product.id}`}>
-                    <button className={`${styles.button} ${styles.view}`}>
-                      View
-                    </button>
-                  </Link>
-                  <form action={deleteProduct}>
-                    <input type="hidden" name="id" value={product.id} />
-                    <button className={`${styles.button} ${styles.delete}`}>
-                      Delete
-                    </button>
-                  </form>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <Pagination count={count} />
+      
+      {error && <div className={styles.error}>{error}</div>}
+      
+      {loading ? (
+        <div className={styles.loading}>جاري التحميل...</div>
+      ) : (
+        <>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <td>المنتج</td>
+                <td>الوصف</td>
+                <td>السعر</td>
+                <td>المخزون</td>
+                <td>الحالة</td>
+                <td>الإجراءات</td>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedProducts.map((product) => (
+                <tr key={product.id}>
+                  <td>
+                    <div className={styles.product}>
+                      {product.images && product.images[0] ? (
+                        <Image
+                          src={product.images[0]}
+                          alt={product.name}
+                          width={40}
+                          height={40}
+                          className={styles.productImage}
+                        />
+                      ) : (
+                        <div className={styles.noImage}>لا توجد صورة</div>
+                      )}
+                      {product.name}
+                    </div>
+                  </td>
+                  <td>
+                    <span className={styles.description}>
+                      {product.description?.substring(0, 50)}
+                      {product.description?.length > 50 ? "..." : ""}
+                    </span>
+                  </td>
+                  <td>{product.price} DA</td>
+                  <td>{product.stock}</td>
+                  <td>
+                    <span className={`${styles.status} ${product.is_active ? styles.active : styles.passive}`}>
+                      {product.is_active ? "نشط" : "غير نشط"}
+                    </span>
+                  </td>
+                  <td>
+                    <div className={styles.buttons}>
+                      <Link href={`/admin/dashboard/products/${product.id}`}>
+                        <button className={`${styles.button} ${styles.view}`}>
+                          عرض
+                        </button>
+                      </Link>
+                      <button
+                        className={`${styles.button} ${styles.delete}`}
+                        onClick={() => handleDelete(product.id)}
+                      >
+                        حذف
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <Pagination count={count} />
+        </>
+      )}
     </div>
   );
 };

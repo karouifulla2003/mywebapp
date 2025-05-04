@@ -162,7 +162,7 @@ export default function SellerProfile() {
   }
 
   return (
-    <div className="p-6" dir="rtl">
+    <div className="p-6" dir="ltr">
       <h1 className="text-2xl font-bold mb-6">ملف البائع الشخصي</h1>
       
       {successMessage && (

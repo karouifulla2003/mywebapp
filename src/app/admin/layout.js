@@ -1,31 +1,21 @@
-// app/admin/layout.jsx
-'use server';
-
-import { auth, isAdmin } from '@/auth';
+//src/app/admin/layout.js
+import { getCurrentUser } from '@/auth';
+import { isAdmin } from '@/auth';
 import { redirect } from 'next/navigation';
-import AdminNavbar from '@/components/admin-dashboard/navbar/navbar';
-import AdminSidebar from '@/components/admin-dashboard/sidebar/sidebar';
+import "@/components/admin-dashboard/globals.css";
 
 export default async function AdminLayout({ children }) {
-  const session = await auth().catch(() => null);
+  const user = await getCurrentUser();
+  console.log("User in AdminLayout:", user);
   
-  if (!session?.user) {
-    redirect('/auth/login?error=session');
-  }
-  
-  if (!(await isAdmin(session))) {
-    redirect('/auth/login?error=unauthorized');
+  if (!user || !isAdmin(user)) {
+    console.log("غير مصرح: تحويل إلى صفحة تسجيل الدخول");
+    redirect('/auth/login');
   }
 
   return (
-    <div className="flex h-screen bg-gray-100 rtl">
-      <AdminSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <AdminNavbar user={session.user} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-          {children}
-        </main>
-      </div>
+    <div className="admin-layout">
+      {children}
     </div>
   );
 }

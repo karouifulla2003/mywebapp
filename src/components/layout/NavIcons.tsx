@@ -1,67 +1,87 @@
 "use client";
 
-import Image from "next/image";
-import CartModel from "@/components/cart/CartModel";
 import { useState } from "react";
+import CartModel from "@/components/cart/CartModel";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import NotificationsModel from "../notification/NotificationsModel";
-import { FiBell, FiShoppingCart, FiUser } from "react-icons/fi";
+import { FiBell, FiShoppingCart, FiHeart } from "react-icons/fi";
+import ProfileDropdown from "./ProfileDropdown";
+import { useWishlist } from "@/hooks/useWishlist";
 
 const NavIcons = () => {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   
+  // استخدام هوك المفضلات
+  const { wishlist } = useWishlist();
+  
+  // يمكنك تغيير هذه القيمة لاختبار الحالتين
   const isLoggedIn = false;
   const router = useRouter();
 
-  const handleProfile = () => {
-    if (!isLoggedIn) {
-      router.push("/auth/login");
-    } else {
-      setIsProfileOpen((prev) => !prev);
-    }
+  // بيانات المستخدم (تستخدم فقط إذا كان المستخدم مسجل دخول)
+  const userData = {
+    name: "اسم المستخدم",
+    image: "/images/user-avatar.jpg" // استبدل هذا بالمسار الفعلي للصورة
+  };
+
+  const handleLogout = () => {
+    // قم بإضافة منطق تسجيل الخروج هنا
+    console.log("تسجيل الخروج");
+    // يمكنك إعادة توجيه المستخدم بعد تسجيل الخروج
+    // router.push("/");
   };
 
   return (
-    <div className="flex items-center gap-4 xl:gap-6 relative">
-      {/* أيقونة البروفايل - تم تحديثها باستخدام react-icons */}
-      <div onClick={handleProfile} className="cursor-pointer">
-        <FiUser className="w-6 h-6 text-gray-700 hover:text-primary" />
-      </div>
+    <div className="flex items-center gap-3 xl:gap-5 relative">
+      {/* مكون البروفايل الجديد */}
+      <ProfileDropdown 
+        isLoggedIn={isLoggedIn}
+        userData={userData}
+        onLogout={handleLogout}
+      />
 
-      {/* عرض قائمة البروفايل إذا كان المستخدم مسجل الدخول */}
-      {isProfileOpen && isLoggedIn && (
-        <div className="absolute p-4 rounded-md top-12 left-0 text-sm shadow-[0_3px_10px_rgb(0,0,0,0.2)] bg-white z-20">
-          <Link href="/profile">Profile</Link>
-          <div className="mt-2 cursor-pointer">Logout</div>
-        </div>
-      )}
-
-      {/* أيقونة الإشعارات - النسخة المحسنة */}
+      {/* أيقونة الإشعارات */}
       <div className="relative">
         <button 
           onClick={() => setIsNotificationsOpen(true)}
-          className="p-1 rounded-full hover:bg-gray-100 transition-colors relative"
+          className="p-1 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors relative"
           aria-label="Notifications"
         >
-          <FiBell className="w-6 h-6 text-gray-700 hover:text-primary" />
-          <span className="absolute -top-4 -right-4 w-6 h-6 bg-Revibe rounded-full text-white text-sm flex items-center justify-center">
+          <FiBell className="w-5 h-5 text-gray-700 hover:text-[#FDA210] active:text-[#787a79] hover:scale-110 active:scale-95 transition-all duration-300" />
+          <span className="absolute -top-3 -right-3 w-5 h-5 bg-Revibe rounded-full text-white text-xs flex items-center justify-center">
             3
           </span>
         </button>
       </div>
 
-      {/* أيقونة السلة - تم تحديثها باستخدام react-icons */}
+      {/* أيقونة المفضلة - تم تعديلها للانتقال إلى صفحة المفضلة */}
+      <div className="relative">
+        <Link href="/wishlist">
+          <button 
+            className="p-1 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors relative"
+            aria-label="Favorites"
+          >
+            <FiHeart className="w-5 h-5 text-gray-700 hover:text-[#FDA210] active:text-[#787a79] hover:scale-110 active:scale-95 transition-all duration-300" />
+            {wishlist.length > 0 && (
+              <span className="absolute -top-3 -right-3 w-5 h-5 bg-Revibe rounded-full text-white text-xs flex items-center justify-center">
+                {wishlist.length}
+              </span>
+            )}
+          </button>
+        </Link>
+      </div>
+
+      {/* أيقونة السلة */}
       <div className="relative">
         <button 
           onClick={() => setIsCartOpen((prev) => !prev)}
-          className="p-1 rounded-full hover:bg-gray-100 transition-colors relative"
+          className="p-1 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors relative"
           aria-label="Cart"
         >
-          <FiShoppingCart className="w-6 h-6 text-gray-700 hover:text-primary" />
-          <span className="absolute -top-4 -right-4 w-6 h-6 bg-Revibe rounded-full text-white text-sm flex items-center justify-center">
+          <FiShoppingCart className="w-5 h-5 text-gray-700 hover:text-[#FDA210] active:text-[#787a79] hover:scale-110 active:scale-95 transition-all duration-300" />
+          <span className="absolute -top-3 -right-3 w-5 h-5 bg-Revibe rounded-full text-white text-xs flex items-center justify-center">
             2
           </span>
         </button>
@@ -73,8 +93,8 @@ const NavIcons = () => {
       {/* عرض نموذج الإشعارات إذا كان مفتوحًا */}
       {isNotificationsOpen && (
         <NotificationsModel 
-          isOpen={isNotificationsOpen} 
-          onClose={() => setIsNotificationsOpen(false)} 
+          isOpen={isNotificationsOpen}
+          onClose={() => setIsNotificationsOpen(false)}
         />
       )}
     </div>

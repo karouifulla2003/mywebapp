@@ -1,12 +1,10 @@
 "use client";
 import Footer from "@/components/layout/Footer";
-import NavBar from "@/components/layout/NavBar";
 import React from "react";
 
 const About = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <NavBar />
 
       <main className="flex-grow pt-24 pb-12 container mx-auto px-4">
         {/* Hero Section with Custom Gradient */}
@@ -98,7 +96,7 @@ const About = () => {
               { value: "190+", label: "Global markets", color: "from-[#FDA619] to-[#3FA878]" }
             ].map((stat, index) => (
               <div key={index} className="p-6 bg-white/10 backdrop-blur-sm rounded-xl hover:scale-105 transition-transform">
-                <p className={`text-5xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r ${stat.color}`}>
+                <p className={`text-5xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r DA{stat.color}`}>
                   {stat.value}
                 </p>
                 <p className="text-white/90">{stat.label}</p>
@@ -133,10 +131,10 @@ const About = () => {
             }
           ].map((feature, index) => (
             <div key={index} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all group">
-              <div className={`w-12 h-12 rounded-full ${feature.color} flex items-center justify-center text-2xl mb-4`}>
+              <div className={`w-12 h-12 rounded-full DA{feature.color} flex items-center justify-center text-2xl mb-4`}>
                 {feature.icon}
               </div>
-              <h3 className={`text-xl font-bold mb-3 group-hover:text-[${index === 1 ? '#FDA619' : '#3FA878'}] transition-colors`}>
+              <h3 className={`text-xl font-bold mb-3 group-hover:text-[DA{index === 1 ? '#FDA619' : '#3FA878'}] transition-colors`}>
                 {feature.title}
               </h3>
               <p className="text-gray-600 mb-5">{feature.desc}</p>
@@ -168,7 +166,7 @@ const About = () => {
             {
               date: "Mar 6, 2025",
               category: "Company for Charity",
-              title: "Raised Over $192 Million in 2024",
+              title: "Raised Over DA192 Million in 2024",
               desc: "2024 was our greatest year of charitable commerce yet.",
               shares: ["LinkedIn", "Facebook", "Twitter"]
             },
@@ -176,7 +174,7 @@ const About = () => {
               date: "Feb 26, 2025",
               category: "Earnings",
               title: "Reports Fourth Quarter 2024 Results",
-              desc: "Q4 Revenue of $2.6 billion with strong growth.",
+              desc: "Q4 Revenue of DA2.6 billion with strong growth.",
               shares: ["LinkedIn", "Facebook", "Twitter"]
             }
           ].map((news, index) => (

@@ -50,7 +50,7 @@ export default function SearchPage({
                     <div className="h-48 bg-gray-200 flex items-center justify-center">
                       {product.image ? (
                         <Image 
-                          src={product.image} 
+                          src={product.image || "/culture.jpg"}
                           alt={product.name} 
                           width={150} 
                           height={150} 

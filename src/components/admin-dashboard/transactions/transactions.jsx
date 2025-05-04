@@ -34,7 +34,7 @@ const Transactions = () => {
               </span>
             </td>
             <td>14.02.2024</td>
-            <td>$3.200</td>
+            <td>3.200 DA</td>
           </tr>
           <tr>
             <td>
@@ -53,7 +53,7 @@ const Transactions = () => {
               <span className={`${styles.status} ${styles.done}`}>Done</span>
             </td>
             <td>14.02.2024</td>
-            <td>$3.200</td>
+            <td>3.200 DA</td>
           </tr>
           <tr>
             <td>
@@ -74,7 +74,7 @@ const Transactions = () => {
               </span>
             </td>
             <td>14.02.2024</td>
-            <td>$3.200</td>
+            <td>3.200 DA</td>
           </tr>
           <tr>
             <td>
@@ -95,7 +95,7 @@ const Transactions = () => {
               </span>
             </td>
             <td>14.02.2024</td>
-            <td>$3.200</td>
+            <td>3.200 DA</td>
           </tr>
         </tbody>
       </table>

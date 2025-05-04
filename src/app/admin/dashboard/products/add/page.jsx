@@ -1,3 +1,4 @@
+//app/admin/dashboard/products/add/page.jsx
 import { addProduct } from "@/app/lib/actions";
 import styles from "@/app/ui/dashboard/products/addProduct/addProduct.module.css";
 

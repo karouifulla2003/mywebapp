@@ -1,83 +1,163 @@
-// ProductList.tsx
-"use client"
-import { Product } from "./ProductCard";
-import ProductCard from "./ProductCard";
+'use client';
 
-const ProductList = () => {
-  // إنشاء مصفوفة من بيانات المنتجات
-  const products: Product[] = [
-    {
-      id: 1,
-      name: "Latest Model Digital Camera",
-      price: "6000 Da",
-      description: "A high-tech digital camera with the newest features and best performance",
-      mainImage: "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      hoverImage: "https://images.pexels.com/photos/12629754/pexels-photo-12629754.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load"
-    },
-    {
-      id: 2,
-      name: "Anti-Acne Skincare Serum",
-      price: "3200 Da",
-      description: "A special skincare liquid designed to fight acne and improve skin health.",
-      mainImage: "https://images.pexels.com/photos/7353843/pexels-photo-7353843.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load",
-      hoverImage: "https://images.pexels.com/photos/12538690/pexels-photo-12538690.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-    },
-    {
-      id: 3,
-      name: "Winter Wool Sweater",
-      price: "1800 Da",
-      description: "A warm and cozy sweater made of wool, perfect for cold weather.",
-      mainImage: "https://images.pexels.com/photos/14641423/pexels-photo-14641423.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load",
-      hoverImage: "https://images.pexels.com/photos/6630846/pexels-photo-6630846.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load"
-    },
-    {
-      id: 4,
-      name: "iPhone 14 Pro Max",
-      price: "190 000 Da",
-      description: "Apple's premium smartphone with advanced features and top performance.",
-      mainImage: "https://images.pexels.com/photos/18525573/pexels-photo-18525573/free-photo-of-nature-main-apple-pomme.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load",
-      hoverImage: "https://images.pexels.com/photos/13399477/pexels-photo-13399477.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load"
-    },
-    {
-      id: 5,
-      name: "Trendy Denim Caps",
-      price: "2850 Da",
-      description: "Fashionable caps made of denim fabric, perfect for a casual and stylish look.",
-      mainImage: "https://i.pinimg.com/736x/c2/9f/f4/c29ff4bace53b4ac8fb66d3d54c28bc8.jpg",
-      hoverImage: "https://i.pinimg.com/736x/ed/a5/e4/eda5e4d79edc732d74f0ca4fe25b9ea6.jpg"
-    },
-    {
-      id: 6,
-      name: "Authentic Wooden Utensils",
-      price: "5500 Da",
-      description: "High-quality kitchen utensils crafted from natural wood, durable and elegant.",
-      mainImage: "https://i.pinimg.com/736x/ac/e6/7b/ace67b0f65ff97fa743431d4b8f7b9db.jpg",
-      hoverImage: "https://i.pinimg.com/736x/65/f2/84/65f284700be1e43189629dace88e8ec5.jpg"
-    },
-    {
-      id: 7,
-      name: "Mountain Hiking Boots",
-      price: "4000 Da",
-      description: "Strong and comfortable boots designed for hiking and outdoor adventures.",
-      mainImage: "https://i.pinimg.com/736x/1e/7c/d4/1e7cd44b39f14693851c1680e46cc839.jpg",
-      hoverImage: "https://i.pinimg.com/736x/fb/94/3f/fb943f80e8a1f8ad9b634592aabff2da.jpg"
-    },
-    {
-      id: 8,
-      name: "Fun Octopus Toy",
-      price: "1500 DA",
-      description: "An entertaining toy designed like an octopus, bringing joy and excitement.",
-      mainImage: "https://i.pinimg.com/736x/21/ff/af/21ffafc671d9050bafb220cfdceb8c39.jpg",
-      hoverImage: "https://i.pinimg.com/736x/d1/c2/92/d1c29250cf9d542511b1db2922b67b4b.jpg"
+import { useState, useEffect, useMemo } from 'react';
+import ProductCard from './ProductCard';
+
+export interface Product {
+  id: number;
+  name: string;
+  price: number;
+  discount_price: number | null;
+  stock: number;
+  category_id: number;
+  is_featured: boolean;
+  is_active: boolean;
+  description: string;
+  rating?: number;
+  reviewCount?: number;
+  isNew?: boolean;
+  isBestseller?: boolean;
+}
+
+interface ProductListProps {
+  products?: Product[];
+  title?: string;
+  emptyMessage?: string;
+  layout?: 'grid' | 'list';
+  columns?: {
+    sm?: number;
+    md?: number;
+    lg?: number;
+    xl?: number;
+  };
+  showFilters?: boolean;
+  isLoading?: boolean;
+}
+
+const ProductList: React.FC<ProductListProps> = ({
+  products = [],
+  title = 'Products',
+  emptyMessage = 'No products found',
+  layout = 'grid',
+  columns = { sm: 2, md: 3, lg: 4, xl: 5 },
+  showFilters = false,
+  isLoading = false,
+}) => {
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [sortOption, setSortOption] = useState<string>('default');
+  
+  // استخدام useMemo بدلاً من useState وuseEffect لتصفية وترتيب المنتجات
+  const filteredProducts = useMemo(() => {
+    if (!products || products.length === 0) {
+      return [];
     }
-  ];
 
-  // تحسين تباعد وتنسيق الشبكة
+    let result = [...products];
+
+    // Filter by category
+    if (selectedCategory !== null) {
+      result = result.filter(product => product.category_id === selectedCategory);
+    }
+
+    // Sort products
+    switch (sortOption) {
+      case 'price-asc':
+        result.sort((a, b) => (a.discount_price || a.price) - (b.discount_price || b.price));
+        break;
+      case 'price-desc':
+        result.sort((a, b) => (b.discount_price || b.price) - (a.discount_price || a.price));
+        break;
+      case 'name-asc':
+        result.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'name-desc':
+        result.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'rating':
+        result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      case 'newest':
+        result.sort((a, b) => (b.isNew === a.isNew ? 0 : b.isNew ? 1 : -1));
+        break;
+      case 'featured':
+        result.sort((a, b) => (b.is_featured === a.is_featured ? 0 : b.is_featured ? 1 : -1));
+        break;
+      default:
+        break;
+    }
+
+    return result;
+  }, [products, selectedCategory, sortOption]);
+
+  // استخدام useMemo لحساب الفئات المتاحة
+  const categories = useMemo(() => {
+    return Array.from(
+      new Set((products || []).map(product => product.category_id))
+    ).sort((a, b) => a - b);
+  }, [products]);
+
+  const getGridClasses = () => {
+    const gridClasses = ['grid', 'gap-4'];
+    gridClasses.push('grid-cols-1');
+    if (columns?.sm) gridClasses.push(`sm:grid-cols-${columns.sm}`);
+    if (columns?.md) gridClasses.push(`md:grid-cols-${columns.md}`);
+    if (columns?.lg) gridClasses.push(`lg:grid-cols-${columns.lg}`);
+    if (columns?.xl) gridClasses.push(`xl:grid-cols-${columns.xl}`);
+    return gridClasses.join(' ');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold">{title}</h2>
+        <div className={getGridClasses()}>
+          {Array.from({ length: 8 }).map((_, index) => (
+            <div key={index} className="bg-gray-100 rounded-lg h-72 animate-pulse"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="mt-16 flex gap-x-10 gap-y-20 flex-wrap px-4 sm:px-6 lg:px-8">
-      {products.map(product => (
-        <ProductCard key={product.id} product={product} />
-      ))}
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-xl font-bold">{title}</h2>
+
+        {showFilters && (
+          <div className="mt-2 sm:mt-0 flex flex-col sm:flex-row gap-2">
+      
+
+
+          </div>
+        )}
+      </div>
+
+      {filteredProducts.length > 0 ? (
+        <div className={getGridClasses()}>
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              id={product.id}
+              name={product.name}
+              price={product.price}
+              discount_price={product.discount_price}
+              stock={product.stock}
+              category_id={product.category_id}
+              is_featured={product.is_featured}
+              is_active={product.is_active}
+              description={product.description}
+              rating={product.rating}
+              reviewCount={product.reviewCount}
+              isNew={product.isNew}
+              isBestseller={product.isBestseller} mainImage={''} hoverImage={''}            />
+          ))}
+        </div>
+      ) : (
+        <div className="py-8 text-center text-gray-500">
+          <p>{emptyMessage}</p>
+        </div>
+      )}
     </div>
   );
 };

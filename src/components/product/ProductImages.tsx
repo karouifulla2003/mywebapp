@@ -1,147 +1,102 @@
-"use client";
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, ZoomIn, Truck, CreditCard, ShoppingBag } from "lucide-react";
+'use client';
 
-const images = [
-  {
-    id: 1,
-    url: "https://images.pexels.com/photos/14641423/pexels-photo-14641423.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load",
-    alt: "صورة المنتج الأولى"
-  },
-  {
-    id: 2,
-    url: "https://images.pexels.com/photos/6630846/pexels-photo-6630846.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load",
-    alt: "صورة المنتج الثانية"
-  },
-  {
-    id: 3,
-    url: "https://images.pexels.com/photos/30263570/pexels-photo-30263570/free-photo-of-pulls-plies-confortables-aux-couleurs-chaudes-de-l-automne.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load",
-    alt: "صورة المنتج الثالثة"
-  },
-  {
-    id: 4,
-    url: "https://images.pexels.com/photos/6630834/pexels-photo-6630834.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-    alt: "صورة المنتج الرابعة"
-  },
-];
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
-const ProductImages = () => {
-  const [index, setIndex] = useState(0);
-  const [isZoomed, setIsZoomed] = useState(false);
-  const [loadedImages, setLoadedImages] = useState([images[0].url]);
+interface ProductImagesProps {
+  images: string[];
+  productName: string;
+}
 
-  // تحميل الصور مسبقاً
+const ProductImages: React.FC<ProductImagesProps> = ({ images, productName }) => {
+  const [mainImage, setMainImage] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
+
   useEffect(() => {
-    const preloadImages = () => {
-      const newLoadedImages = [...loadedImages];
-      images.forEach(img => {
-        if (!loadedImages.includes(img.url)) {
-          const image = new window.Image();
-          image.src = img.url;
-          newLoadedImages.push(img.url);
-        }
-      });
-      setLoadedImages(newLoadedImages);
-    };
-    preloadImages();
-  }, []);
+    console.log("صور المنتج:", images);
+    if (images && images.length > 0) {
+      setMainImage('/placeholder-product.jpg');
+    } else {
+      // Default image if no images are provided
+      setMainImage('/placeholder-product.jpg');
+    }
+    setLoading(false);
+  }, [images]);
 
-  // التنقل بين الصور
-  const goToNextImage = () => {
-    setIndex((prevIndex) => (prevIndex + 1) % images.length);
-    setIsZoomed(false);
+  const handleThumbnailClick = (image: string) => {
+    setMainImage('/placeholder-product.jpg');
   };
 
-  const goToPreviousImage = () => {
-    setIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
-    setIsZoomed(false);
-  };
-
-  // تبديل وضع التكبير
-  const toggleZoom = () => {
-    setIsZoomed(!isZoomed);
-  };
-
-  // معالج حدث الشراء
-  const handleBuyNow = () => {
-    alert("جاري الانتقال إلى صفحة الشراء");
-    // يمكن هنا إضافة المنطق الخاص بالانتقال إلى صفحة الشراء
-  };
+  if (loading) {
+    return (
+      <div className="w-full flex justify-center items-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-      
+    <div className="product-images w-full">
+      {/* Main Image */}
+      <div className="main-image-container mb-4 relative h-96 bg-gray-100 rounded-lg overflow-hidden">
+        <Image
+          src={mainImage || '/placeholder-product.jpg'}
+          alt={`${productName} - Main Image`}
+          fill
+          style={{ objectFit: 'contain' }}
+          priority
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+      </div>
 
-      {/* العرض الرئيسي للصور */}
-      <div className="relative">
-        <div className={`h-[500px] relative rounded-lg overflow-hidden transition-all duration-300 ease-in-out ${isZoomed ? "cursor-zoom-out" : "cursor-zoom-in"}`} onClick={toggleZoom}>
-          <Image
-            src={images[index].url}
-            alt={images[index].alt}
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className={`object-cover rounded-md transition-all duration-500 ${isZoomed ? "scale-150" : "scale-100"}`}
-            priority
-          />
+      {/* Thumbnails */}
+      {images && images.length > 1 ? (
+        <div className="thumbnails-container flex gap-2 mt-2 overflow-x-auto pb-2">
+          {images.map((image, index) => (
+            <div
+              key={index}
+              className={`thumbnail-item cursor-pointer relative w-20 h-20 border-2 rounded-md overflow-hidden ${
+                mainImage === image ? 'border-blue-500' : 'border-gray-200'
+              }`}
+              onClick={() => handleThumbnailClick(image)}
+            >
+              <Image
+                src={mainImage || '/placeholder-product.jpg'}
+                alt={`${productName} - Thumbnail ${index + 1}`}
+                fill
+                style={{ objectFit: 'cover' }}
+                sizes="80px"
+              />
+            </div>
+          ))}
         </div>
-
-        {/* أيقونة التكبير */}
+      ) : null}
+      
+      {/* Image Controls for zooming can be added here in future */}
+      <div className="image-controls mt-4 flex justify-end">
         <button 
-          className="absolute top-4 right-4 bg-white bg-opacity-60 p-2 rounded-full shadow-md hover:bg-opacity-80 transition-all z-10"
-          onClick={toggleZoom}
-          aria-label={isZoomed ? "تصغير الصورة" : "تكبير الصورة"}
+          className="text-sm text-gray-600 flex items-center"
+          onClick={() => {
+            // Open full screen view or modal with all images (to be implemented)
+            console.log('View all images clicked');
+          }}
         >
-          <ZoomIn size={20} />
-        </button>
-
-        {/* أزرار التنقل */}
-        <button
-          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-60 p-2 rounded-full shadow-md hover:bg-opacity-80 transition-all z-10"
-          onClick={goToPreviousImage}
-          aria-label="الصورة السابقة"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <button
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-60 p-2 rounded-full shadow-md hover:bg-opacity-80 transition-all z-10"
-          onClick={goToNextImage}
-          aria-label="الصورة التالية"
-        >
-          <ChevronRight size={24} />
-        </button>
-      </div>
-
-      {/* الصور المصغرة */}
-      <div className="flex justify-between gap-3 mt-4">
-        {images.map((img, i) => (
-          <div
-            className={`relative w-1/4 h-24 sm:h-32 cursor-pointer transition-all duration-300 overflow-hidden rounded-md ${
-              index === i
-                ? "ring-2 ring-offset-2 ring-blue-500"
-                : "opacity-70 hover:opacity-100"
-            }`}
-            key={img.id}
-            onClick={() => {
-              setIndex(i);
-              setIsZoomed(false);
-            }}
-            aria-label={`عرض ${img.alt}`}
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            strokeWidth={1.5} 
+            stroke="currentColor" 
+            className="w-4 h-4 mr-1"
           >
-            <Image
-              src={img.url}
-              alt={img.alt}
-              fill
-              sizes="20vw"
-              className="object-cover rounded-md hover:scale-105 transition-transform duration-300"
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" 
             />
-          </div>
-        ))}
-      </div>
-
-      {/* عداد الصور */}
-      <div className="text-center mt-2 text-sm text-gray-500 rtl:font-sans">
-        {index + 1} / {images.length}
+          </svg>
+          View all {images?.length} images
+        </button>
       </div>
     </div>
   );

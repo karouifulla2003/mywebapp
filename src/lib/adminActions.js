@@ -1,11 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { AdminProduct, AdminUser } from "./adminModels";
-import { connectToMongo } from "./db";
 import { redirect } from "next/navigation";
-import bcrypt from "bcrypt";
-// Nota: Es posible que necesites ajustar la importación de signIn según cómo esté configurada la autenticación
 import { signIn } from "../auth";
 
 export const addUser = async (formData) => {
@@ -13,22 +9,7 @@ export const addUser = async (formData) => {
     Object.fromEntries(formData);
 
   try {
-    await connectToMongo();
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const newUser = new AdminUser({
-      username,
-      email,
-      password: hashedPassword,
-      phone,
-      address,
-      isAdmin,
-      isActive,
-    });
-
-    await newUser.save();
+    // Database operations removed
   } catch (err) {
     console.log(err);
     throw new Error("Failed to create user!");
@@ -43,29 +24,7 @@ export const updateUser = async (formData) => {
     Object.fromEntries(formData);
 
   try {
-    await connectToMongo();
-
-    const updateFields = {
-      username,
-      email,
-      phone,
-      address,
-      isAdmin,
-      isActive,
-    };
-
-    // Si se proporciona contraseña, la hasheamos
-    if (password) {
-      const salt = await bcrypt.genSalt(10);
-      updateFields.password = await bcrypt.hash(password, salt);
-    }
-
-    Object.keys(updateFields).forEach(
-      (key) =>
-        (updateFields[key] === "" || updateFields[key] === undefined) && delete updateFields[key]
-    );
-
-    await AdminUser.findByIdAndUpdate(id, updateFields);
+    // Database operations removed
   } catch (err) {
     console.log(err);
     throw new Error("Failed to update user!");
@@ -80,18 +39,7 @@ export const addProduct = async (formData) => {
     Object.fromEntries(formData);
 
   try {
-    await connectToMongo();
-
-    const newProduct = new AdminProduct({
-      title,
-      desc,
-      price,
-      stock,
-      color,
-      size,
-    });
-
-    await newProduct.save();
+    // Database operations removed
   } catch (err) {
     console.log(err);
     throw new Error("Failed to create product!");
@@ -106,23 +54,7 @@ export const updateProduct = async (formData) => {
     Object.fromEntries(formData);
 
   try {
-    await connectToMongo();
-
-    const updateFields = {
-      title,
-      desc,
-      price,
-      stock,
-      color,
-      size,
-    };
-
-    Object.keys(updateFields).forEach(
-      (key) =>
-        (updateFields[key] === "" || updateFields[key] === undefined) && delete updateFields[key]
-    );
-
-    await AdminProduct.findByIdAndUpdate(id, updateFields);
+    // Database operations removed
   } catch (err) {
     console.log(err);
     throw new Error("Failed to update product!");
@@ -136,8 +68,7 @@ export const deleteUser = async (formData) => {
   const { id } = Object.fromEntries(formData);
 
   try {
-    await connectToMongo();
-    await AdminUser.findByIdAndDelete(id);
+    // Database operations removed
   } catch (err) {
     console.log(err);
     throw new Error("Failed to delete user!");
@@ -150,8 +81,7 @@ export const deleteProduct = async (formData) => {
   const { id } = Object.fromEntries(formData);
 
   try {
-    await connectToMongo();
-    await AdminProduct.findByIdAndDelete(id);
+    // Database operations removed
   } catch (err) {
     console.log(err);
     throw new Error("Failed to delete product!");

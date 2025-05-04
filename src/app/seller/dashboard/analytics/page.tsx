@@ -228,7 +228,7 @@ export default function SellerAnalytics() {
               <YAxis dataKey="name" type="category" width={150} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="sales" name="Sales ($)" fill="#8884d8" />
+              <Bar dataKey="sales" name="Sales ()" fill="#8884d8" />
               <Bar dataKey="units" name="Units Sold" fill="#82ca9d" />
             </BarChart>
           </ResponsiveContainer>

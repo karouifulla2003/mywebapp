@@ -1,110 +1,88 @@
+// تحديث مكون OrderSummary لتضمين معلومات الشحن
+// src/components/checkout/OrderSummary.tsx
+"use client";
+
 import React from 'react';
-import Image from 'next/image';
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
-
-interface OrderSummaryProps {
-  products: Product[];
-  subtotal: number;
-  shipping: number;
-  tax: number;
-  discount?: number;
-  couponCode?: string;
-  onRemoveCoupon?: () => void;
-  currency?: string;
-}
-
-const OrderSummary: React.FC<OrderSummaryProps> = ({
-  products,
-  subtotal,
-  shipping,
-  tax,
-  discount = 0,
-  couponCode,
+const OrderSummary = ({ 
+  products, 
+  subtotal, 
+  shipping, 
+  tax, 
+  discount, 
+  couponCode, 
   onRemoveCoupon,
-  currency = "$"
+  shippingMethod 
 }) => {
+  // حساب المجموع النهائي
   const total = subtotal + shipping + tax - discount;
 
-  const formatPrice = (price: number): string => {
-    return `${currency}${price.toFixed(2)}`;
-  };
-
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+    <div className="bg-gray-50 p-4 rounded-lg border">
+      <h2 className="text-xl font-semibold mb-4">ملخص الطلب</h2>
       
       {/* قائمة المنتجات */}
-      <div className="border-b pb-4 mb-4">
-        {products.map((product) => (
-          <div key={product.id} className="flex items-center mb-4">
-            <div className="relative h-16 w-16 flex-shrink-0 rounded border">
-              <Image 
-                src={product.image} 
-                alt={product.name}
-                fill
-                sizes="64px"
-                className="object-cover rounded"
-              />
-            </div>
-            <div className="mr-4 flex-grow">
-              <h3 className="text-sm font-medium">{product.name}</h3>
-              <p className="text-sm text-gray-500">Quantity: {product.quantity}</p>
-            </div>
-            <div className="text-sm font-medium">
-              {formatPrice(product.price * product.quantity)}
-            </div>
-          </div>
-        ))}
+      <div className="mb-4">
+        <h3 className="font-medium mb-2">المنتجات</h3>
+        <ul className="space-y-2">
+          {products.map(product => (
+            <li key={product.id} className="flex justify-between">
+              <span>{product.name} x {product.quantity}</span>
+              <span>${(product.price * product.quantity).toFixed(2)}</span>
+            </li>
+          ))}
+        </ul>
       </div>
       
-      {/* تفاصيل التكلفة */}
-      <div className="space-y-2 border-b pb-4 mb-4">
-        <div className="flex justify-between text-sm">
-          <span>SubTotale:</span>
-          <span>{formatPrice(subtotal)}</span>
+      {/* معلومات طريقة الشحن المختارة */}
+      {shippingMethod && (
+        <div className="mb-4 pb-2 border-b">
+          <h3 className="font-medium mb-1">طريقة الشحن:</h3>
+          <p>{shippingMethod}</p>
         </div>
-        <div className="flex justify-between text-sm">
-          <span>Shipping:</span>
-          <span>{shipping === 0 ? "شحن مجاني" : formatPrice(shipping)}</span>
+      )}
+      
+      {/* الكوبون - إذا كان موجوداً */}
+      {couponCode && (
+        <div className="mb-4 pb-2 border-b">
+          <div className="flex justify-between items-center">
+            <span>كوبون: {couponCode}</span>
+            <button 
+              onClick={onRemoveCoupon}
+              className="text-red-500 text-sm hover:text-red-600"
+            >
+              إزالة
+            </button>
+          </div>
         </div>
-        <div className="flex justify-between text-sm">
-          <span>Taxes:</span>
-          <span>{formatPrice(tax)}</span>
+      )}
+      
+      {/* المبالغ */}
+      <div className="space-y-2 mb-4 pb-2 border-b">
+        <div className="flex justify-between">
+          <span>المجموع الفرعي:</span>
+          <span>${subtotal.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>الشحن:</span>
+          <span>{shipping === 0 ? 'مجاناً' : `$${shipping.toFixed(2)}`}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>الضريبة:</span>
+          <span>${tax.toFixed(2)}</span>
         </div>
         {discount > 0 && (
-          <div className="flex justify-between text-sm text-green-600">
-            <span className="flex items-center">
-              coupon{couponCode && `(${couponCode})`}:
-              {couponCode && onRemoveCoupon && (
-                <button 
-                  onClick={onRemoveCoupon}
-                  className="mr-2 text-xs underline text-red-500"
-                >
-                  Remove
-                </button>
-              )}
-            </span>
-            <span>-{formatPrice(discount)}</span>
+          <div className="flex justify-between text-green-600">
+            <span>الخصم:</span>
+            <span>-${discount.toFixed(2)}</span>
           </div>
         )}
       </div>
       
-      {/* إجمالي الطلب */}
-      <div className="flex justify-between font-semibold text-lg">
-        <span>Totale</span>
-        <span>{formatPrice(total)}</span>
-      </div>
-      
-      {/* معلومات إضافية */}
-      <div className="mt-4 text-xs text-gray-500">
-        <p>By clicking "Confirm Order," you agree to our Terms of Service and Privacy Policy.</p>
+      {/* المجموع النهائي */}
+      <div className="flex justify-between font-bold text-lg">
+        <span>المجموع:</span>
+        <span>${total.toFixed(2)}</span>
       </div>
     </div>
   );
